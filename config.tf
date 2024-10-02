@@ -20,7 +20,8 @@ provider "tls" {
 }
 
 resource "tls_private_key" "build_key" {
-  algorithm = "ED25519"
+  algorithm = "RSA"
+  rsa_bits  = 4096
 }
 
 resource "yandex_compute_instance" "build" {
@@ -78,7 +79,8 @@ resource "yandex_compute_instance" "build" {
 }
 
 resource "tls_private_key" "deploy_key" {
-  algorithm = "ED25519"
+  algorithm = "RSA"
+  rsa_bits  = 4096
 }
 
 resource "yandex_compute_instance" "deploy" {
