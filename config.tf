@@ -3,12 +3,20 @@ terraform {
     yandex = {
       source = "yandex-cloud/yandex"
     }
+    tls = {
+      source = "hashicorp/tls"
+      version = "4.0.6"
+    }
   }
   required_version = ">= 0.13"
 }
 
 provider "yandex" {
   zone = "ru-central1-b"
+}
+
+provider "tls" {
+  # Configuration options
 }
 
 resource "tls_private_key" "build_key" {
