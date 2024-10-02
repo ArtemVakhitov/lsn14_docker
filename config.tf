@@ -52,16 +52,16 @@ resource "yandex_compute_instance" "build" {
 
   provisioner "local-exec" { 
     command = <<-EOT
-      echo '${tls_private_key.build_key.private_key_openssh}' > ./build.pem
-      chmod 400 ./build.pem
-    EOT
+		echo '${tls_private_key.build_key.private_key_openssh}' > ./build.pem
+		chmod 400 ./build.pem
+	EOT
   }
 
   connection {
     host = self.network_interface.0.nat_ip_address
     type = "ssh"
     user = "ubuntu"
-    private_key = "tls_private_key.build_key.private_key_openssh"
+    private_key = tls_private_key.build_key.private_key_openssh
     timeout = "3m"
   }
 
@@ -110,16 +110,16 @@ resource "yandex_compute_instance" "deploy" {
 
   provisioner "local-exec" { 
     command = <<-EOT
-      echo '${tls_private_key.deploy_key.private_key_openssh}' > ./deploy.pem
-      chmod 400 ./deploy.pem
-    EOT
+		echo '${tls_private_key.deploy_key.private_key_openssh}' > ./deploy.pem
+		chmod 400 ./deploy.pem
+	EOT
   }
 
   connection {
     host = self.network_interface.0.nat_ip_address
     type = "ssh"
     user = "ubuntu"
-    private_key = "tls_private_key.deploy_key.private_key_openssh"
+    private_key = tls_private_key.deploy_key.private_key_openssh
     timeout = "3m"
   }
 
