@@ -42,7 +42,7 @@ resource "yandex_compute_instance" "build" {
     host = self.network_interface.0.nat_ip_address
     type = "ssh"
     user = "ubuntu"
-    private_key = file("~/.ssh/devops-eng-yandex-kp.pem")
+    private_key = file("/home/user/.ssh/devops-eng-yandex-kp.pem")
     timeout = "3m"
   }
 
@@ -86,7 +86,7 @@ resource "yandex_compute_instance" "deploy" {
     host = self.network_interface.0.nat_ip_address
     type = "ssh"
     user = "ubuntu"
-    private_key = file("~/.ssh/devops-eng-yandex-kp.pem")
+    private_key = file("/home/user/.ssh/devops-eng-yandex-kp.pem")
     timeout = "3m"
   }
 
