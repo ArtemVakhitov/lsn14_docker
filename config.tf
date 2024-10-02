@@ -51,7 +51,7 @@ resource "yandex_compute_instance" "build" {
       "sudo apt-get update",
       "sudo apt-get install -y git maven",
       "cd /tmp && git clone https://github.com/boxfuse/boxfuse-sample-java-war-hello.git",
-      "cd /tmp && mvn package"
+      "cd /tmp/boxfuse-sample-java-war-hello && mvn package"
     ]
   }
 
