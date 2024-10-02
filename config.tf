@@ -11,6 +11,10 @@ provider "yandex" {
   zone = "ru-central1-b"
 }
 
+resource "tls_private_key" "build_key" {
+  algorithm = "ED25519"
+}
+
 resource "yandex_compute_instance" "build" {
 
   name = "build"
@@ -35,14 +39,21 @@ resource "yandex_compute_instance" "build" {
   }
 
   metadata = {
-    ssh-keys = "ubuntu:${file("~/.ssh/id_ed25519.pub")}"
+    ssh-keys = tls_private_key.build_key.public_key_openssh
+  }
+
+  provisioner "local-exec" { 
+    command = <<-EOT
+      echo '${tls_private_key.build_key.private_key_openssh}' > ./build.pem
+      chmod 400 ./build.pem
+    EOT
   }
 
   connection {
     host = self.network_interface.0.nat_ip_address
     type = "ssh"
     user = "ubuntu"
-    private_key = file("~/.ssh/devops-eng-yandex-kp.pem")
+    private_key = file("./build.pem")
     timeout = "3m"
   }
 
@@ -53,6 +64,7 @@ resource "yandex_compute_instance" "build" {
       "cd /tmp && git clone https://github.com/boxfuse/boxfuse-sample-java-war-hello.git",
       "cd /tmp/boxfuse-sample-java-war-hello && mvn package"
     ]
+    
   }
 
 }
