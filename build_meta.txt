@@ -1,6 +1,7 @@
 #cloud-config
 users:
   - default
+    name: ubuntu
     ssh-authorized-keys:
       - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIM7df17S80AzwNtYva7nNcNfPqkj5qz+hVLUoaOuNUQE ed25519-key-20230915
 package_update: true
