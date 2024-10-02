@@ -25,7 +25,7 @@ resource "yandex_compute_instance" "build" {
 
   boot_disk {
     initialize_params {
-      image_id = "fd8tvc3529h2cpjvpkr5"
+      image_id = "fd874d4jo8jbroqs6d7i"
     }
   }
 
@@ -71,7 +71,7 @@ resource "yandex_compute_instance" "deploy" {
 
   boot_disk {
     initialize_params {
-      image_id = "fd8tvc3529h2cpjvpkr5"
+      image_id = "fd874d4jo8jbroqs6d7i"
     }
   }
 
