@@ -61,7 +61,7 @@ resource "yandex_compute_instance" "build" {
     host = self.network_interface.0.nat_ip_address
     type = "ssh"
     user = "ubuntu"
-    private_key = file("./build.pem")
+    private_key = "tls_private_key.build_key.private_key_openssh"
     timeout = "3m"
   }
 
@@ -119,7 +119,7 @@ resource "yandex_compute_instance" "deploy" {
     host = self.network_interface.0.nat_ip_address
     type = "ssh"
     user = "ubuntu"
-    private_key = file("./deploy.pem")
+    private_key = "tls_private_key.deploy_key.private_key_openssh"
     timeout = "3m"
   }
 
