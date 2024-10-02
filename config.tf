@@ -35,19 +35,21 @@ resource "yandex_compute_instance" "build" {
   }
 
   metadata = {
-    user-data = "${file("build_meta.txt")}"
+    ssh-keys = "ubuntu:${file("~/.ssh/id_ed25519.pub")}"
   }
 
   connection {
     host = self.network_interface.0.nat_ip_address
     type = "ssh"
     user = "ubuntu"
-    private_key = file("/home/user/.ssh/devops-eng-yandex-kp.pem")
+    private_key = file("~/.ssh/devops-eng-yandex-kp.pem")
     timeout = "3m"
   }
 
   provisioner "remote-exec" {
     inline = [
+      "sudo apt-get update",
+      "sudo apt-get install -y git maven",
       "cd /tmp && git clone https://github.com/boxfuse/boxfuse-sample-java-war-hello.git",
       "cd /tmp && mvn package"
     ]
@@ -79,15 +81,22 @@ resource "yandex_compute_instance" "deploy" {
   }
 
   metadata = {
-    user-data = "${file("deploy_meta.txt")}"
+    ssh-keys = "ubuntu:${file("~/.ssh/id_ed25519.pub")}"
   }
 
   connection {
     host = self.network_interface.0.nat_ip_address
     type = "ssh"
     user = "ubuntu"
-    private_key = file("/home/user/.ssh/devops-eng-yandex-kp.pem")
+    private_key = file("~/.ssh/devops-eng-yandex-kp.pem")
     timeout = "3m"
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "sudo apt-get update",
+      "sudo apt-get install -y tomcat9"
+    ]
   }
 
 }
