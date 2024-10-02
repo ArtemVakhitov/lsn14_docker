@@ -48,12 +48,12 @@ resource "yandex_compute_instance" "build" {
   }
 
   metadata = {
-    ssh-keys = tls_private_key.build_key.public_key_openssh
+    ssh-keys = tls_private_key.build_key.public_key_pem
   }
 
   provisioner "local-exec" { 
     command = <<-EOT
-		echo '${tls_private_key.build_key.private_key_openssh}' > ./build.pem
+		echo '${tls_private_key.build_key.private_key_pem}' > ./build.pem
 		chmod 400 ./build.pem
 	EOT
   }
@@ -62,7 +62,7 @@ resource "yandex_compute_instance" "build" {
     host = self.network_interface.0.nat_ip_address
     type = "ssh"
     user = "ubuntu"
-    private_key = tls_private_key.build_key.private_key_openssh
+    private_key = tls_private_key.build_key.private_key_pem
     timeout = "3m"
   }
 
@@ -107,12 +107,12 @@ resource "yandex_compute_instance" "deploy" {
   }
 
   metadata = {
-    ssh-keys = tls_private_key.deploy_key.public_key_openssh
+    ssh-keys = tls_private_key.deploy_key.public_key_pem
   }
 
   provisioner "local-exec" { 
     command = <<-EOT
-		echo '${tls_private_key.deploy_key.private_key_openssh}' > ./deploy.pem
+		echo '${tls_private_key.deploy_key.private_key_pem}' > ./deploy.pem
 		chmod 400 ./deploy.pem
 	EOT
   }
@@ -121,7 +121,7 @@ resource "yandex_compute_instance" "deploy" {
     host = self.network_interface.0.nat_ip_address
     type = "ssh"
     user = "ubuntu"
-    private_key = tls_private_key.deploy_key.private_key_openssh
+    private_key = tls_private_key.deploy_key.private_key_pem
     timeout = "3m"
   }
 
