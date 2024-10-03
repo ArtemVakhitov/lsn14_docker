@@ -128,7 +128,7 @@ resource "yandex_compute_instance" "deploy" {
       host = self.network_interface.0.nat_ip_address
       type = "ssh"
       user = "ubuntu"
-      private_key = "${data.local_file.build_private_key.content}"
+      private_key = "${data.local_file.deploy_private_key.content}"
     }
 
   }
