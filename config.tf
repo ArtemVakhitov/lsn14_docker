@@ -17,12 +17,12 @@ resource "null_resource" "create_build_key" {
   }
 }
 
-resource "local_file" "build_private_key" {
+data "local_file" "build_private_key" {
   filename = "${path.module}/build"
   depends_on = [null_resource.create_build_key]
 }
 
-resource "local_file" "build_public_key" {
+data "local_file" "build_public_key" {
   filename = "${path.module}/build.pub"
   depends_on = [null_resource.create_build_key]
 }
@@ -33,12 +33,12 @@ resource "null_resource" "create_deploy_key" {
   }
 }
 
-resource "local_file" "deploy_private_key" {
+data "local_file" "deploy_private_key" {
   filename = "${path.module}/deploy"
   depends_on = [null_resource.create_deploy_key]
 }
 
-resource "local_file" "deploy_public_key" {
+data "local_file" "deploy_public_key" {
   filename = "${path.module}/deploy.pub"
   depends_on = [null_resource.create_deploy_key]
 }
