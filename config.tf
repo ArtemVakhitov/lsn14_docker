@@ -3,10 +3,6 @@ terraform {
     yandex = {
       source = "yandex-cloud/yandex"
     }
-    tls = {
-      source = "hashicorp/tls"
-      version = "4.0.6"
-    }
   }
   required_version = ">= 0.13"
 }
