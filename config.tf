@@ -15,13 +15,36 @@ provider "yandex" {
   zone = "ru-central1-b"
 }
 
-provider "tls" {
-  # Configuration options
+resource "null_resource" "create_build_key" {
+  provisioner "local-exec" {
+    command = "ssh-keygen -b 2048 -f ${path.module}/build"
+  }
 }
 
-resource "tls_private_key" "build_key" {
-  algorithm = "RSA"
-  rsa_bits  = 4096
+resource "local_file" "build_private_key" {
+  filename = "${path.module}/build"
+  depends_on = [null_resource.create_build_key]
+}
+
+resource "local_file" "build_public_key" {
+  filename = "${path.module}/build.pub"
+  depends_on = [null_resource.create_build_key]
+}
+
+resource "null_resource" "create_deploy_key" {
+  provisioner "local-exec" {
+    command = "ssh-keygen -b 2048 -f ${path.module}/deploy"
+  }
+}
+
+resource "local_file" "deploy_private_key" {
+  filename = "${path.module}/deploy"
+  depends_on = [null_resource.create_deploy_key]
+}
+
+resource "local_file" "deploy_public_key" {
+  filename = "${path.module}/deploy.pub"
+  depends_on = [null_resource.create_deploy_key]
 }
 
 resource "yandex_compute_instance" "build" {
@@ -48,22 +71,7 @@ resource "yandex_compute_instance" "build" {
   }
 
   metadata = {
-    ssh-keys = trimspace(tls_private_key.build_key.public_key_pem)
-  }
-
-  provisioner "local-exec" { 
-    command = <<-EOT
-		echo '${tls_private_key.build_key.private_key_pem}' > ./build.pem
-		chmod 400 ./build.pem
-	EOT
-  }
-
-  connection {
-    host = self.network_interface.0.nat_ip_address
-    type = "ssh"
-    user = "ubuntu"
-    private_key = trimspace(tls_private_key.build_key.private_key_pem)
-    timeout = "3m"
+    ssh-keys = local_file.build_public_key.content
   }
 
   provisioner "remote-exec" {
@@ -73,14 +81,15 @@ resource "yandex_compute_instance" "build" {
       "cd /tmp && git clone https://github.com/boxfuse/boxfuse-sample-java-war-hello.git",
       "cd /tmp/boxfuse-sample-java-war-hello && mvn package"
     ]
-    
+    connection {
+      host = self.network_interface.0.nat_ip_address
+      type = "ssh"
+      user = "ubuntu"
+      private_key = local_file.build_private_key.content
+    }
+
   }
 
-}
-
-resource "tls_private_key" "deploy_key" {
-  algorithm = "RSA"
-  rsa_bits  = 4096
 }
 
 resource "yandex_compute_instance" "deploy" {
@@ -107,22 +116,7 @@ resource "yandex_compute_instance" "deploy" {
   }
 
   metadata = {
-    ssh-keys = trimspace(tls_private_key.deploy_key.public_key_pem)
-  }
-
-  provisioner "local-exec" { 
-    command = <<-EOT
-		echo '${tls_private_key.deploy_key.private_key_pem}' > ./deploy.pem
-		chmod 400 ./deploy.pem
-	EOT
-  }
-
-  connection {
-    host = self.network_interface.0.nat_ip_address
-    type = "ssh"
-    user = "ubuntu"
-    private_key = trimspace(tls_private_key.deploy_key.private_key_pem)
-    timeout = "3m"
+    ssh-keys = local_file.deploy_public_key.content
   }
 
   provisioner "remote-exec" {
@@ -130,6 +124,13 @@ resource "yandex_compute_instance" "deploy" {
       "sudo apt-get update",
       "sudo apt-get install -y tomcat9"
     ]
+    connection {
+      host = self.network_interface.0.nat_ip_address
+      type = "ssh"
+      user = "ubuntu"
+      private_key = local_file.build_private_key.content
+    }
+
   }
 
 }
