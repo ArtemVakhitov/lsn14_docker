@@ -133,6 +133,8 @@ resource "yandex_compute_instance" "deploy" {
 
   }
 
+  depends_on = [yandex_compute_instance.build]
+
 }
 
 resource "null_resource" "destroy_keys" {
