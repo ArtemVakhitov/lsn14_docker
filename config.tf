@@ -71,7 +71,7 @@ resource "yandex_compute_instance" "build" {
   }
 
   metadata = {
-    ssh-keys = "${data.local_file.build_public_key.content}"
+    ssh-keys = "ubuntu:${data.local_file.build_public_key.content}"
   }
 
   provisioner "remote-exec" {
@@ -116,7 +116,7 @@ resource "yandex_compute_instance" "deploy" {
   }
 
   metadata = {
-    ssh-keys = "${data.local_file.deploy_public_key.content}"
+    ssh-keys = "ubuntu:${data.local_file.deploy_public_key.content}"
   }
 
   provisioner "remote-exec" {
