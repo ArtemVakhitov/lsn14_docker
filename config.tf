@@ -13,7 +13,9 @@ provider "yandex" {
 
 resource "null_resource" "create_build_key" {
   provisioner "local-exec" {
-    command = "ssh-keygen -b 2048 -f ${path.module}/build"
+    command = <<-EOT
+		ssh-keygen -b 2048 -f ${path.module}/build -N ""
+	EOT
   }
 }
 
@@ -29,7 +31,9 @@ data "local_file" "build_public_key" {
 
 resource "null_resource" "create_deploy_key" {
   provisioner "local-exec" {
-    command = "ssh-keygen -b 2048 -f ${path.module}/deploy"
+    command = <<-EOT
+		ssh-keygen -b 2048 -f ${path.module}/deploy -N ""
+	EOT
   }
 }
 
