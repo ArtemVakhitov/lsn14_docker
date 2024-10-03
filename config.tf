@@ -67,7 +67,7 @@ resource "yandex_compute_instance" "build" {
   }
 
   metadata = {
-    ssh-keys = local_file.build_public_key.content
+    ssh-keys = data.local_file.build_public_key.content
   }
 
   provisioner "remote-exec" {
@@ -81,7 +81,7 @@ resource "yandex_compute_instance" "build" {
       host = self.network_interface.0.nat_ip_address
       type = "ssh"
       user = "ubuntu"
-      private_key = local_file.build_private_key.content
+      private_key = data.local_file.build_private_key.content
     }
 
   }
@@ -112,7 +112,7 @@ resource "yandex_compute_instance" "deploy" {
   }
 
   metadata = {
-    ssh-keys = local_file.deploy_public_key.content
+    ssh-keys = data.local_file.deploy_public_key.content
   }
 
   provisioner "remote-exec" {
@@ -124,7 +124,7 @@ resource "yandex_compute_instance" "deploy" {
       host = self.network_interface.0.nat_ip_address
       type = "ssh"
       user = "ubuntu"
-      private_key = local_file.build_private_key.content
+      private_key = data.local_file.build_private_key.content
     }
 
   }
