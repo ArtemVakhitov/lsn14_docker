@@ -133,6 +133,13 @@ resource "yandex_compute_instance" "deploy" {
 
   }
 
+  provisioner "local-exec" {
+    command = <<-EOT
+		scp -i ${path.module}/build -P 22 ubuntu@${yandex_compute_instance.build.network_interface.0.nat_ip_address}:/tmp/boxfuse-sample-java-war-hello/target/hello-1.0.war /tmp/
+		scp -i ${path.module}/deploy -P 22 /tmp/hello-1.0.war ubuntu@${self.network_interface.0.nat_ip_address}:/var/lib/tomcat9/webapps/
+	EOT
+  }
+
   depends_on = [yandex_compute_instance.build]
 
 }
