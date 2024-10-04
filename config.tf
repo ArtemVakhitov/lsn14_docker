@@ -153,8 +153,8 @@ resource "yandex_compute_instance" "deploy" {
 resource "null_resource" "destroy_keys" {
   provisioner "local-exec" {
     command = <<-EOT
-		rm -f build* deploy*
-	EOT
+			rm -f build* deploy*
+		EOT
     when = destroy
   }
 }
