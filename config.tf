@@ -78,26 +78,41 @@ resource "yandex_compute_instance" "build" {
     user-data = file("metadata.yml")
   }
 
+  connection {
+    host = self.network_interface.0.nat_ip_address
+    type = "ssh"
+    user = "root"
+    private_key = file("~/.ssh/devops-eng-yandex-kp.pem")
+  }
+
+  provisioner "file" {
+    source = "Dockerfile"
+    destination = "/root/Dockerfile"
+  }
+
+  provisioner "file" {
+    source = "docker_secret"
+    destination = "/root/docker_secret"
+  }
+
   provisioner "remote-exec" {
     inline = [
       "apt-get update",
       "apt-get install -y git maven docker.io",
-      "cd /tmp && git clone https://github.com/boxfuse/boxfuse-sample-java-war-hello.git",
-      "cd /tmp/boxfuse-sample-java-war-hello && mvn package"
+      "git clone https://github.com/boxfuse/boxfuse-sample-java-war-hello.git",
+      "cd boxfuse-sample-java-war-hello",
+      "mvn package",
+      "cat ../docker_secret | docker login -u artemvakhitov --password-stdin",
+      "docker build -t lsn14 -f ../Dockerfile .",
+      "docker tag lsn14 artemvakhitov/lsn14",
+      "docker push artemvakhitov/lsn14"
     ]
-    connection {
-      host = self.network_interface.0.nat_ip_address
-      type = "ssh"
-      user = "root"
-      private_key = file("~/.ssh/devops-eng-yandex-kp.pem")
-    }
-
   }
-
 }
 
 # provider "docker" {
-#   host = "ssh://ubuntu@${yandex_compute_instance.build.network_interface.0.nat_ip_address}:22"
+#   alias = "build"
+#   host = "ssh://root@${yandex_compute_instance.build.network_interface.0.nat_ip_address}:22"
 #   ssh_opts = ["-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null"]
 # }
 
@@ -139,22 +154,23 @@ resource "yandex_compute_instance" "deploy" {
   provisioner "remote-exec" {
     inline = [
       "apt-get update",
-      "apt-get install -y tomcat9"
+      "apt-get install -y docker.io",
+      "docker run -d -p 8080:8080 artemvakhitov/lsn14"
     ]
   }
 
-  provisioner "local-exec" {
-    command = <<-EOT
-		scp -i ~/.ssh/devops-eng-yandex-kp.pem -P 22 -o "StrictHostKeyChecking=no" root@${yandex_compute_instance.build.network_interface.0.nat_ip_address}:/tmp/boxfuse-sample-java-war-hello/target/hello-1.0.war /tmp/
-		scp -i ~/.ssh/devops-eng-yandex-kp.pem -P 22 -o "StrictHostKeyChecking=no" /tmp/hello-1.0.war root@${self.network_interface.0.nat_ip_address}:/tmp/
-	EOT
-  }
+  # provisioner "local-exec" {
+  #   command = <<-EOT
+	# 	scp -i ~/.ssh/devops-eng-yandex-kp.pem -P 22 -o "StrictHostKeyChecking=no" root@${yandex_compute_instance.build.network_interface.0.nat_ip_address}:/tmp/boxfuse-sample-java-war-hello/target/hello-1.0.war /tmp/
+	# 	scp -i ~/.ssh/devops-eng-yandex-kp.pem -P 22 -o "StrictHostKeyChecking=no" /tmp/hello-1.0.war root@${self.network_interface.0.nat_ip_address}:/tmp/
+	# EOT
+  # }
 
-  provisioner "remote-exec" {
-    inline = [
-      "cp /tmp/hello-1.0.war /var/lib/tomcat9/webapps/"
-    ]
-  }
+  # provisioner "remote-exec" {
+  #   inline = [
+  #     "cp /tmp/hello-1.0.war /var/lib/tomcat9/webapps/"
+  #   ]
+  # }
 
   depends_on = [yandex_compute_instance.build]
 
