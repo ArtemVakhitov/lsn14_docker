@@ -3,6 +3,10 @@ terraform {
     yandex = {
       source = "yandex-cloud/yandex"
     }
+    docker = {
+      source  = "kreuzwerker/docker"
+      version = "3.0.2"
+    }
   }
   required_version = ">= 0.13"
 }
@@ -11,41 +15,41 @@ provider "yandex" {
   zone = "ru-central1-b"
 }
 
-resource "null_resource" "create_build_key" {
-  provisioner "local-exec" {
-    command = <<-EOT
-		ssh-keygen -b 2048 -f ${path.module}/build -N ""
-	EOT
-  }
-}
+# resource "null_resource" "create_build_key" {
+#   provisioner "local-exec" {
+#     command = <<-EOT
+# 		ssh-keygen -b 2048 -f ${path.module}/build -N ""
+# 	EOT
+#   }
+# }
 
-data "local_sensitive_file" "build_private_key" {
-  filename = "${path.module}/build"
-  depends_on = [null_resource.create_build_key]
-}
+# data "local_sensitive_file" "build_private_key" {
+#   filename = "${path.module}/build"
+#   depends_on = [null_resource.create_build_key]
+# }
 
-data "local_file" "build_public_key" {
-  filename = "${path.module}/build.pub"
-  depends_on = [null_resource.create_build_key]
-}
+# data "local_file" "build_public_key" {
+#   filename = "${path.module}/build.pub"
+#   depends_on = [null_resource.create_build_key]
+# }
 
-resource "null_resource" "create_deploy_key" {
-  provisioner "local-exec" {
-    command = <<-EOT
-		ssh-keygen -b 2048 -f ${path.module}/deploy -N ""
-	EOT
-  }
-}
+# resource "null_resource" "create_deploy_key" {
+#   provisioner "local-exec" {
+#     command = <<-EOT
+# 		ssh-keygen -b 2048 -f ${path.module}/deploy -N ""
+# 	EOT
+#   }
+# }
 
-data "local_sensitive_file" "deploy_private_key" {
-  filename = "${path.module}/deploy"
-  depends_on = [null_resource.create_deploy_key]
-}
+# data "local_sensitive_file" "deploy_private_key" {
+#   filename = "${path.module}/deploy"
+#   depends_on = [null_resource.create_deploy_key]
+# }
 
-data "local_file" "deploy_public_key" {
-  filename = "${path.module}/deploy.pub"
-  depends_on = [null_resource.create_deploy_key]
-}
+# data "local_file" "deploy_public_key" {
+#   filename = "${path.module}/deploy.pub"
+#   depends_on = [null_resource.create_deploy_key]
+# }
 
 resource "yandex_compute_instance" "build" {
 
@@ -71,26 +75,32 @@ resource "yandex_compute_instance" "build" {
   }
 
   metadata = {
-    ssh-keys = "ubuntu:${data.local_file.build_public_key.content}"
+    user-data = file("metadata.yml")
   }
 
   provisioner "remote-exec" {
     inline = [
       "sudo apt-get update",
-      "sudo apt-get install -y git maven",
+      "sudo apt-get install -y git maven docker.io",
       "cd /tmp && git clone https://github.com/boxfuse/boxfuse-sample-java-war-hello.git",
       "cd /tmp/boxfuse-sample-java-war-hello && mvn package"
     ]
     connection {
       host = self.network_interface.0.nat_ip_address
       type = "ssh"
-      user = "ubuntu"
-      private_key = "${data.local_sensitive_file.build_private_key.content}"
+      user = "root"
+      private_key = file("~/.ssh/devops-eng-yandex-kp.pem")
     }
 
   }
 
 }
+
+# provider "docker" {
+#   host = "ssh://ubuntu@${yandex_compute_instance.build.network_interface.0.nat_ip_address}:22"
+#   ssh_opts = ["-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null"]
+# }
+
 
 resource "yandex_compute_instance" "deploy" {
 
@@ -116,14 +126,14 @@ resource "yandex_compute_instance" "deploy" {
   }
 
   metadata = {
-    ssh-keys = "ubuntu:${data.local_file.deploy_public_key.content}"
+    user-data = file("metadata.yml")
   }
 
   connection {
     host = self.network_interface.0.nat_ip_address
     type = "ssh"
-    user = "ubuntu"
-    private_key = "${data.local_sensitive_file.deploy_private_key.content}"
+    user = "root"
+    private_key = file("~/.ssh/devops-eng-yandex-kp.pem")
   }
 
   provisioner "remote-exec" {
@@ -150,11 +160,11 @@ resource "yandex_compute_instance" "deploy" {
 
 }
 
-resource "null_resource" "destroy_keys" {
-  provisioner "local-exec" {
-    command = <<-EOT
-			rm -f build* deploy*
-		EOT
-    when = destroy
-  }
-}
+# resource "null_resource" "destroy_keys" {
+#   provisioner "local-exec" {
+#     command = <<-EOT
+# 			rm -f build* deploy*
+# 		EOT
+#     when = destroy
+#   }
+# }
