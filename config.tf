@@ -80,8 +80,8 @@ resource "yandex_compute_instance" "build" {
 
   provisioner "remote-exec" {
     inline = [
-      "sudo apt-get update",
-      "sudo apt-get install -y git maven docker.io",
+      "apt-get update",
+      "apt-get install -y git maven docker.io",
       "cd /tmp && git clone https://github.com/boxfuse/boxfuse-sample-java-war-hello.git",
       "cd /tmp/boxfuse-sample-java-war-hello && mvn package"
     ]
@@ -138,21 +138,21 @@ resource "yandex_compute_instance" "deploy" {
 
   provisioner "remote-exec" {
     inline = [
-      "sudo apt-get update",
-      "sudo apt-get install -y tomcat9"
+      "apt-get update",
+      "apt-get install -y tomcat9"
     ]
   }
 
   provisioner "local-exec" {
     command = <<-EOT
-		scp -i ${path.module}/build -P 22 -o "StrictHostKeyChecking=no" ubuntu@${yandex_compute_instance.build.network_interface.0.nat_ip_address}:/tmp/boxfuse-sample-java-war-hello/target/hello-1.0.war /tmp/
-		scp -i ${path.module}/deploy -P 22 -o "StrictHostKeyChecking=no" /tmp/hello-1.0.war ubuntu@${self.network_interface.0.nat_ip_address}:/tmp/
+		scp -i ${path.module}/build -P 22 -o "StrictHostKeyChecking=no" root@${yandex_compute_instance.build.network_interface.0.nat_ip_address}:/tmp/boxfuse-sample-java-war-hello/target/hello-1.0.war /tmp/
+		scp -i ${path.module}/deploy -P 22 -o "StrictHostKeyChecking=no" /tmp/hello-1.0.war root@${self.network_interface.0.nat_ip_address}:/tmp/
 	EOT
   }
 
   provisioner "remote-exec" {
     inline = [
-      "sudo cp /tmp/hello-1.0.war /var/lib/tomcat9/webapps/"
+      "cp /tmp/hello-1.0.war /var/lib/tomcat9/webapps/"
     ]
   }
 
