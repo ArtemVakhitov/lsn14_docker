@@ -15,6 +15,11 @@ provider "yandex" {
   zone = "ru-central1-b"
 }
 
+variable "docker_secret" {
+  type = string
+  sensitive = true
+}
+
 # resource "null_resource" "create_build_key" {
 #   provisioner "local-exec" {
 #     command = <<-EOT
@@ -90,11 +95,6 @@ resource "yandex_compute_instance" "build" {
     destination = "/root/Dockerfile"
   }
 
-  provisioner "file" {
-    source = "docker_secret"
-    destination = "/root/docker_secret"
-  }
-
   provisioner "remote-exec" {
     inline = [
       "apt-get update",
@@ -102,7 +102,7 @@ resource "yandex_compute_instance" "build" {
       "git clone https://github.com/boxfuse/boxfuse-sample-java-war-hello.git",
       "cd boxfuse-sample-java-war-hello",
       "mvn package",
-      "cat ../docker_secret | docker login -u artemvakhitov --password-stdin",
+      "echo ${var.docker_secret} | docker login -u artemvakhitov --password-stdin",
       "docker build -t lsn14 -f ../Dockerfile .",
       "docker tag lsn14 artemvakhitov/lsn14",
       "docker push artemvakhitov/lsn14"
@@ -175,6 +175,23 @@ resource "yandex_compute_instance" "deploy" {
   depends_on = [yandex_compute_instance.build]
 
 }
+
+resource "null_resource" "manage_inputs" {
+
+  # Currently, Terraform asks for inputs at `destroy` and refuses to proceed if they don't match.
+  # A corresponding bug was filed on GitHub long ago which is still not fixed.
+  # This will handle writing .auto.tfvars file so you can simply `terraform destroy`.
+  # Additionally, the docker secret can be used on subsequent runs.
+
+  provisioner "local-exec" {
+    command = <<-EOT
+			if [ ! -f vms.auto.tfvars ]; then printf "docker_secret = %s" "${var.docker_secret}" > vms.auto.tfvars; fi
+		EOT
+    when = create
+  }
+
+}
+
 
 # resource "null_resource" "destroy_keys" {
 #   provisioner "local-exec" {
