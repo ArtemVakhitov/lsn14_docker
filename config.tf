@@ -145,8 +145,8 @@ resource "yandex_compute_instance" "deploy" {
 
   provisioner "local-exec" {
     command = <<-EOT
-		scp -i ${path.module}/build -P 22 -o "StrictHostKeyChecking=no" root@${yandex_compute_instance.build.network_interface.0.nat_ip_address}:/tmp/boxfuse-sample-java-war-hello/target/hello-1.0.war /tmp/
-		scp -i ${path.module}/deploy -P 22 -o "StrictHostKeyChecking=no" /tmp/hello-1.0.war root@${self.network_interface.0.nat_ip_address}:/tmp/
+		scp -i ~/.ssh/devops-eng-yandex-kp.pem -P 22 -o "StrictHostKeyChecking=no" root@${yandex_compute_instance.build.network_interface.0.nat_ip_address}:/tmp/boxfuse-sample-java-war-hello/target/hello-1.0.war /tmp/
+		scp -i ~/.ssh/devops-eng-yandex-kp.pem -P 22 -o "StrictHostKeyChecking=no" /tmp/hello-1.0.war root@${self.network_interface.0.nat_ip_address}:/tmp/
 	EOT
   }
 
