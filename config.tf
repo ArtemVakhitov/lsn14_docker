@@ -14,6 +14,7 @@ provider "yandex" {
 variable "docker_secret" {
   type = string
   sensitive = true
+  default = ""
 }
 
 # resource "null_resource" "create_build_key" {
@@ -175,7 +176,7 @@ resource "null_resource" "manage_inputs" {
   provisioner "local-exec" {
     interpreter = ["bash", "-c"]
     command = <<-EOT
-			if [ ! -f vms.auto.tfvars ]; then printf "docker_secret = %s" "${var.docker_secret}" > vms.auto.tfvars; fi
+			if [ ! -f vms.auto.tfvars ]; then printf "docker_secret = %s\n" "${var.docker_secret}" > vms.auto.tfvars; fi
 		EOT
     when = create
   }
