@@ -3,10 +3,6 @@ terraform {
     yandex = {
       source = "yandex-cloud/yandex"
     }
-    # docker = {
-    #   source  = "kreuzwerker/docker"
-    #   version = "3.0.2"
-    # }
   }
   required_version = ">= 0.13"
 }
@@ -109,13 +105,6 @@ resource "yandex_compute_instance" "build" {
     ]
   }
 }
-
-# provider "docker" {
-#   alias = "build"
-#   host = "ssh://root@${yandex_compute_instance.build.network_interface.0.nat_ip_address}:22"
-#   ssh_opts = ["-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null"]
-# }
-
 
 resource "yandex_compute_instance" "deploy" {
 
