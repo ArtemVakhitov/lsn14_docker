@@ -173,6 +173,7 @@ resource "null_resource" "manage_inputs" {
   # Additionally, the docker secret can be used on subsequent runs.
 
   provisioner "local-exec" {
+    interpreter = ["bash", "-c"]
     command = <<-EOT
 			if [ ! -f vms.auto.tfvars ]; then printf "docker_secret = %s" "${var.docker_secret}" > vms.auto.tfvars; fi
 		EOT
