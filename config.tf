@@ -149,19 +149,6 @@ resource "yandex_compute_instance" "deploy" {
     ]
   }
 
-  # provisioner "local-exec" {
-  #   command = <<-EOT
-	# 	scp -i ~/.ssh/devops-eng-yandex-kp.pem -P 22 -o "StrictHostKeyChecking=no" root@${yandex_compute_instance.build.network_interface.0.nat_ip_address}:/tmp/boxfuse-sample-java-war-hello/target/hello-1.0.war /tmp/
-	# 	scp -i ~/.ssh/devops-eng-yandex-kp.pem -P 22 -o "StrictHostKeyChecking=no" /tmp/hello-1.0.war root@${self.network_interface.0.nat_ip_address}:/tmp/
-	# EOT
-  # }
-
-  # provisioner "remote-exec" {
-  #   inline = [
-  #     "cp /tmp/hello-1.0.war /var/lib/tomcat9/webapps/"
-  #   ]
-  # }
-
   depends_on = [yandex_compute_instance.build]
 
 }
@@ -182,7 +169,6 @@ resource "null_resource" "manage_inputs" {
   }
 
 }
-
 
 # resource "null_resource" "destroy_keys" {
 #   provisioner "local-exec" {
